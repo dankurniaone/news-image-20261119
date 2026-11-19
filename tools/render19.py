@@ -136,46 +136,76 @@ def flag_ru(d, x, y, w, h):
     d.rectangle([x, y, x + w, y + h], outline=(120, 120, 120), width=2)
 
 
-def gulf_map(d, x, y, w, h):
-    """Schematic Persian Gulf: a diagonal sea band, four marked places."""
+def akvan_map(d, x, y, w, h):
+    """Cyclone Akvan over the Bay of Bengal: land left, sea right,
+    a spiral storm tracking north-northwest toward the coast."""
     d.rectangle([x, y, x + w, y + h], fill=LAND)
-    d.line([(x + 30, y + h - 30), (x + w - 30, y + 30)],
-           fill=SEA, width=64)
-    d.ellipse([x + 4, y + h - 56, x + 56, y + h - 4], fill=SEA)
-    d.ellipse([x + w - 56, y + 4, x + w - 4, y + 56], fill=SEA)
-    marks = [
-        ("KUWAIT", 0.14, 0.30),
-        ("BAHRAIN", 0.42, 0.44),
-        ("QESHM", 0.72, 0.30),
-        ("RIYADH", 0.30, 0.82),
-    ]
+    # sea: Bay of Bengal, coastline leaning left toward the bottom
+    d.polygon([(x + w * 0.52, y), (x + w, y), (x + w, y + h),
+               (x + w * 0.46, y + h)], fill=SEA)
+    d.line([(x + w * 0.52, y), (x + w * 0.46, y + h)], fill=INK, width=2)
+    # storm spiral (Archimedean, three turns) over the bay
+    scx, scy, rmax = x + w * 0.76, y + h * 0.46, 44
+    pts = []
+    for i in range(61):
+        t = i / 60
+        a = t * 3 * 2 * math.pi
+        r = 5 + t * (rmax - 5)
+        pts.append((scx + r * math.cos(a), scy + r * math.sin(a)))
+    d.line(pts, fill=NAVY, width=3)
+    d.ellipse([scx - 7, scy - 7, scx + 7, scy + 7], fill=RED)
+    # track arrow: storm moving north-northwest toward the coast
+    ax0, ay0 = scx - 34, scy - 30
+    ax1, ay1 = scx - 78, scy - 62
+    d.line([(ax0, ay0), (ax1, ay1)], fill=RED, width=4)
+    d.line([(ax1, ay1), (ax1 + 16, ay1 + 2)], fill=RED, width=4)
+    d.line([(ax1, ay1), (ax1 + 4, ay1 + 16)], fill=RED, width=4)
+    lab = sans_b(18)
+    t = "BAY OF BENGAL"
+    d.text((x + w - d.textlength(t, font=lab) - 10, y + 8), t, font=lab, fill=NAVY)
+    d.text((x + 10, y + 10), "ODISHA", font=sans_b(18), fill=INK)
+    d.text((x + 10, y + h - 32), "ANDHRA PRADESH", font=sans_b(18), fill=INK)
     lab = sans_b(20)
-    for name, fx, fy in marks:
-        px, py = x + w * fx, y + h * fy
-        d.ellipse([px - 8, py - 8, px + 8, py + 8], fill=RED)
-        d.ellipse([px - 8, py - 8, px + 8, py + 8], outline=(255, 255, 255), width=2)
-        d.text((px + 12, py - 11), name, font=lab, fill=INK)
-    d.text((x + 8, y + 6), "PERSIAN GULF", font=sans_b(20), fill=NAVY)
-    d.text((x + w - 190, y + h - 30), "STRAIT OF HORMUZ", font=sans_b(18), fill=NAVY)
+    t = "AKVAN"
+    d.text((scx - d.textlength(t, font=lab) / 2, scy + 54), t, font=lab, fill=INK)
 
 
 def kerch_diagram(d, x, y, w, h):
-    """Kerch Bridge: two shores, a deck with its road span down."""
+    """Kerch Bridge, two parallel decks: the road span fell Tuesday
+    (V into the strait), the rail span was hit overnight Thursday."""
     d.rectangle([x, y, x + w, y + h], fill=LAND)
     d.rectangle([x, y + h * 0.55, x + w, y + h], fill=SEA)
     d.rectangle([x, y, x + w * 0.30, y + h * 0.55], fill=(210, 198, 168))
     d.rectangle([x + w * 0.70, y, x + w, y + h * 0.55], fill=(210, 198, 168))
-    d.text((x + 14, y + 10), "RUSSIA", font=sans_b(20), fill=INK)
-    d.text((x + w - 110, y + 10), "CRIMEA", font=sans_b(20), fill=INK)
-    deck_y = y + h * 0.30
-    d.rectangle([x, deck_y - 5, x + w * 0.42, deck_y + 5], fill=INK)
-    d.rectangle([x + w * 0.58, deck_y - 5, x + w, deck_y + 5], fill=INK)
-    d.line([(x + w * 0.42, deck_y + 5), (x + w * 0.50, y + h * 0.62)],
+    d.text((x + 14, y + 8), "RUSSIA", font=sans_b(20), fill=INK)
+    d.text((x + w - 110, y + 8), "CRIMEA", font=sans_b(20), fill=INK)
+    # road deck (upper): span down Tuesday, V falling into the strait
+    road_y = y + 38
+    d.rectangle([x, road_y - 5, x + w * 0.42, road_y + 5], fill=INK)
+    d.rectangle([x + w * 0.58, road_y - 5, x + w, road_y + 5], fill=INK)
+    d.line([(x + w * 0.42, road_y + 5), (x + w * 0.50, y + 68)],
            fill=INK, width=8)
-    d.line([(x + w * 0.58, deck_y + 5), (x + w * 0.50, y + h * 0.62)],
+    d.line([(x + w * 0.58, road_y + 5), (x + w * 0.50, y + 68)],
            fill=INK, width=8)
-    d.text((x + w * 0.36, y + h * 0.66), "ROAD SPAN DOWN", font=sans_b(19), fill=RED)
-    d.text((x + 10, y + h - 30), "KERCH STRAIT", font=sans_b(18), fill=NAVY)
+    lab = sans_b(16)
+    t = "ROAD DOWN TUE"
+    d.text((x + w / 2 - d.textlength(t, font=lab) / 2, y + 70), t,
+           font=lab, fill=RED)
+    # rail deck (lower): hit overnight Thursday, red starburst at the break
+    rail_y = y + 100
+    d.rectangle([x, rail_y - 4, x + w * 0.45, rail_y + 4], fill=INK)
+    d.rectangle([x + w * 0.55, rail_y - 4, x + w, rail_y + 4], fill=INK)
+    rcx, rcy = x + w * 0.50, rail_y
+    for ang in (0, 45, 90, 135):
+        a = math.radians(ang)
+        d.line([(rcx - 11 * math.cos(a), rcy - 11 * math.sin(a)),
+                (rcx + 11 * math.cos(a), rcy + 11 * math.sin(a))],
+               fill=RED, width=4)
+    d.ellipse([rcx - 6, rcy - 6, rcx + 6, rcy + 6], fill=RED)
+    t = "RAIL HIT THU"
+    d.text((x + w / 2 - d.textlength(t, font=lab) / 2, y + 114), t,
+           font=lab, fill=RED)
+    d.text((x + 10, y + h - 28), "KERCH STRAIT", font=sans_b(18), fill=NAVY)
 
 
 def vice_skyline(d, x, y, w, h):
@@ -253,12 +283,12 @@ def render():
     d.line([(MARGIN, y), (W - MARGIN, y)], fill=INK, width=2)
     y += 14
 
-    # two-column row: Gulf | Kerch
+    # two-column row: Akvan | Kerch
     col_w = (CW - 40) // 2
     col_x = [MARGIN, MARGIN + col_w + 40]
     row_top = y
     col_bottom = []
-    for i, key in enumerate(("gulf", "kerch")):
+    for i, key in enumerate(("akvan", "kerch")):
         s = n[key]
         x = col_x[i]
         yy = row_top
@@ -268,12 +298,12 @@ def render():
         yy += 8
         yy = para(d, x, yy, s["deck"], serif(27), INK, col_w, 36)
         yy += 14
-        if key == "gulf":
-            gulf_map(d, x, yy, col_w, 170)
+        if key == "akvan":
+            akvan_map(d, x, yy, col_w, 170)
         else:
             kerch_diagram(d, x, yy, col_w, 170)
         yy += 170 + 10
-        yy = para(d, x, yy, s["map_caption"] if key == "gulf" else s["diagram_caption"],
+        yy = para(d, x, yy, s["map_caption"] if key == "akvan" else s["diagram_caption"],
                   sans(20), SOFT, col_w, 26)
         col_bottom.append(yy)
     row_bottom = max(col_bottom)
@@ -294,12 +324,12 @@ def render():
          CW - 48, 38)
     y += 330 + 16
 
-    # Jeffries
-    d.text((MARGIN, y), n["jeffries"]["kicker"], font=sans_b(24), fill=RED)
+    # Anthropic
+    d.text((MARGIN, y), n["anthropic"]["kicker"], font=sans_b(24), fill=RED)
     y += 38
-    y = para(d, MARGIN, y, n["jeffries"]["headline"], serif_b(38), INK, CW, 46)
+    y = para(d, MARGIN, y, n["anthropic"]["headline"], serif_b(38), INK, CW, 46)
     y += 8
-    y = para(d, MARGIN, y, n["jeffries"]["deck"], serif(29), INK, CW, 38)
+    y = para(d, MARGIN, y, n["anthropic"]["deck"], serif(29), INK, CW, 38)
     y += 14
 
     # ticker (auto-fit: shrink until it fits the content width)
